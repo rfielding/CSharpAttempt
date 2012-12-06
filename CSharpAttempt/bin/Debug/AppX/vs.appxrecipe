@@ -22,11 +22,11 @@
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Rob\Documents\Visual Studio 2012\Projects\CSharpAttempt\CSharpAttempt\bin\Debug\CSharpAttempt.exe">
       <PackagePath>CSharpAttempt.exe</PackagePath>
-      <Modified>2012-12-06T22:38:14.350</Modified>
+      <Modified>2012-12-06T23:06:35.751</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Rob\Documents\Visual Studio 2012\Projects\CSharpAttempt\CSharpAttempt\bin\Debug\CSharpAttempt.pdb">
       <PackagePath>CSharpAttempt.pdb</PackagePath>
-      <Modified>2012-12-06T22:38:14.329</Modified>
+      <Modified>2012-12-06T23:06:35.730</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Rob\Documents\Visual Studio 2012\Projects\CSharpAttempt\CSharpAttempt\Assets\Logo.png">
       <PackagePath>Assets\Logo.png</PackagePath>

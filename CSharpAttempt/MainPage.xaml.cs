@@ -37,6 +37,10 @@ namespace CSharpAttempt
         Ellipse[] fingers = new Ellipse[FINGERS];
         float[] fingersPitch = new float[FINGERS];
         float[] fingersTimbre = new float[FINGERS];
+        int[] fingersPolyGroup = new int[FINGERS];
+        int[] fingerSerial = new int[FINGERS];
+        int fingersDownCount = 0;
+        int fingerSerialNumber = 0;
 
         Line[] clines = new Line[COLS];
         Line[] rlines = new Line[ROWS];
@@ -114,6 +118,9 @@ namespace CSharpAttempt
                 if(fingerIdx[i] == NONE)
                 {
                     fingerIdx[i] = pointerId;
+                    fingerSerial[i] = fingerSerialNumber;
+                    fingersDownCount++;
+                    fingerSerialNumber++;
                     return i;
                 }
             }
@@ -139,16 +146,18 @@ namespace CSharpAttempt
                 if (fingerIdx[i] == pointerId)
                 {
                     fingerIdx[i] = NONE;
+                    fingersDownCount--;
                     return i;
                 }
             }
             return -1;
         }
 
-        private float FingerFreq(PointerRoutedEventArgs e)
+        private float FingerFreq(PointerRoutedEventArgs e, int i)
         {
             double pitchx = (double)(COLS * (e.GetCurrentPoint(canvas).Position.X) / (canvas.ActualWidth * 12));
             double pitchy = (double)(ROWS - ROWS * (e.GetCurrentPoint(canvas).Position.Y) / canvas.ActualHeight);
+            fingersPolyGroup[i] = (int)Math.Floor(pitchy);
             double pitchm = 12*pitchx + 5 * Math.Floor(pitchy) - 0.5;
             float pitch = (float)(27.5d * Math.Pow(2.0d, pitchm/12));
             return pitch;
@@ -169,7 +178,7 @@ namespace CSharpAttempt
                 {
                     nextTickCount64[i] = GetTickCount64();
                     float vol = 1.0f;
-                    float pitch = FingerFreq(e);
+                    float pitch = FingerFreq(e,i);
                     float timbre = FingerTimbre(e);
                     fingersPitch[i] = pitch;
                     fingersTimbre[i] = timbre;
@@ -196,7 +205,7 @@ namespace CSharpAttempt
                 int i = IdxFingerMoved(e.Pointer.PointerId);
                 if (i >= 0)
                 {
-                    float pitch = FingerFreq(e);
+                    float pitch = FingerFreq(e,i);
                     float timbre = FingerTimbre(e);
                     fingersPitch[i] = pitch;
                     fingersTimbre[i] = timbre;
@@ -243,7 +252,7 @@ namespace CSharpAttempt
             if (i >= 0)
             {
                 nextTickCount64[i] = GetTickCount64();
-                if (nextTickCount64[i] - lastTickCount64[i] > 25)
+                if (nextTickCount64[i] - lastTickCount64[i] > fingersDownCount*5)
                 {
                     FingerMoveHandler(e);
                     lastTickCount64[i] = nextTickCount64[i];
