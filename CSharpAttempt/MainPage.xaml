@@ -39,7 +39,7 @@
             </StackPanel>
         </StackPanel>
             
-        <Canvas Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas">
+        <Canvas Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas" SizeChanged="CanvasSizeChanged">
             <!-- PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" PointerCanceled="OnPointerCancelled" PointerExited="OnPointerExited" SizeChanged="OnSizeChanged"> -->
         </Canvas>
     </Grid>

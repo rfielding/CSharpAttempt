@@ -20,26 +20,26 @@
             <TextBox Margin="4,4,4,4" Name="host" Width="120" Text="127.0.0.1"></TextBox>
             <TextBlock Margin="20,4,4,4" Text="Port:" VerticalAlignment="Center"></TextBlock>
             <TextBox Margin="4,4,4,4" Name="port" Width="120" Text="1973"></TextBox>
-            <Button x:ConnectionId='8' Margin="10,4,4,4" Name="ConnectToOSC"                           >Connect</Button>
+            <Button x:ConnectionId='9' Margin="10,4,4,4" Name="ConnectToOSC"                           >Connect</Button>
         </StackPanel>
         <StackPanel Margin="4,4,4,4" Grid.Column="0" Grid.Row="1" Orientation="Vertical">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Volume"/>
-                <Slider x:ConnectionId='2' Orientation="Horizontal"  Width="100" Name="volume"                                      Value="100"></Slider>
+                <Slider x:ConnectionId='3' Orientation="Horizontal"  Width="100" Name="volume"                                      Value="100"></Slider>
                 <TextBlock Text="Octave"/>
-                <Slider x:ConnectionId='3' Orientation="Horizontal" Width="100" Name="octave"                                      Value="50"></Slider>
+                <Slider x:ConnectionId='4' Orientation="Horizontal" Width="100" Name="octave"                                      Value="50"></Slider>
                 <TextBlock Text="Reverb"/>
-                <Slider x:ConnectionId='4' Orientation="Horizontal" Width="100" Name="reverb"                                      Value="50"></Slider>
+                <Slider x:ConnectionId='5' Orientation="Horizontal" Width="100" Name="reverb"                                      Value="50"></Slider>
                 <TextBlock Text="Chorus Freq"/>
-                <Slider x:ConnectionId='5' Orientation="Horizontal" Width="100" Name="chorusFreq"                                      Value="50"></Slider>
+                <Slider x:ConnectionId='6' Orientation="Horizontal" Width="100" Name="chorusFreq"                                      Value="50"></Slider>
                 <TextBlock Text="Chorus Depth"/>
-                <Slider x:ConnectionId='6' Orientation="Horizontal" Width="100" Name="chorusDepth"                                      Value="50"></Slider>
+                <Slider x:ConnectionId='7' Orientation="Horizontal" Width="100" Name="chorusDepth"                                      Value="50"></Slider>
                 <TextBlock Text="Chorus Mix"/>
-                <Slider x:ConnectionId='7' Orientation="Horizontal" Width="100" Name="chorusMix"                                      Value="50"></Slider>
+                <Slider x:ConnectionId='8' Orientation="Horizontal" Width="100" Name="chorusMix"                                      Value="50"></Slider>
             </StackPanel>
         </StackPanel>
             
-        <Canvas Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas">
+        <Canvas x:ConnectionId='2' Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas"                                >
             <!-- PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" PointerCanceled="OnPointerCancelled" PointerExited="OnPointerExited" SizeChanged="OnSizeChanged"> -->
         </Canvas>
     </Grid>

@@ -37,8 +37,10 @@ namespace CSharpAttempt
         Ellipse[] fingers = new Ellipse[FINGERS];
         float[] fingersPitch = new float[FINGERS];
         float[] fingersTimbre = new float[FINGERS];
+        float[] fingersVolume = new float[FINGERS];
         int[] fingersPolyGroup = new int[FINGERS];
         int[] fingerSerial = new int[FINGERS];
+        bool[] fingerIsSilent = new bool[FINGERS];
         int fingersDownCount = 0;
         int fingerSerialNumber = 0;
 
@@ -63,11 +65,6 @@ namespace CSharpAttempt
             SolidColorBrush bigFretColor = new SolidColorBrush(Colors.Violet);
             SolidColorBrush fingerColor = new SolidColorBrush(Colors.DarkBlue);
             SolidColorBrush textColor = new SolidColorBrush(Colors.White);
-            //canvas.PointerPressed += new PointerEventHandler(CanvasPointerPressed);
-            //canvas.PointerMoved += new PointerEventHandler(CanvasPointerMoved);
-            //canvas.PointerReleased += new PointerEventHandler(CanvasPointerReleased);
-            //canvas.PointerCancel += new PointerEventHandler(OnPointerCancelled);
-            canvas.SizeChanged += new SizeChangedEventHandler(CanvasSizeChanged);
             for (int i = 0; i < FINGERS; i++)
             {
                 fingers[i] = new Ellipse();
@@ -127,6 +124,24 @@ namespace CSharpAttempt
             return -1;
         }
 
+        private int IdxOfMaxSerialNumberInPolyGroup(int polyGroup)
+        {
+            int serial = 0;
+            int serialIdx = -1;
+            for (int i = 0; i < FINGERS; i++)
+            {
+                if (fingersPolyGroup[i] == polyGroup)
+                {
+                    if (serial < fingerSerial[i])
+                    {
+                        serial = fingerSerial[i];
+                        serialIdx = i;
+                    }
+                }
+            }
+            return serialIdx;
+        }
+
         private int IdxFingerMoved(uint pointerId)
         {
             for (int i = 0; i < FINGERS; i++)
@@ -182,6 +197,7 @@ namespace CSharpAttempt
                     float timbre = FingerTimbre(e);
                     fingersPitch[i] = pitch;
                     fingersTimbre[i] = timbre;
+                    fingersVolume[i] = vol;
                     Point p = e.GetCurrentPoint(canvas).Position;
                     Canvas.SetLeft(fingers[i], p.X - fingerRadius);
                     Canvas.SetTop(fingers[i], p.Y - fingerRadius);
@@ -189,7 +205,6 @@ namespace CSharpAttempt
                     fingerText[i].Visibility = Visibility.Visible;
                     Canvas.SetLeft(fingerText[i], p.X + 30);
                     Canvas.SetTop(fingerText[i], p.Y);
-                    //fingerText[i].Text = pitch + "";
                     WriteOSCNote(i, vol, pitch, timbre);
                 }
                 return i;
@@ -207,13 +222,13 @@ namespace CSharpAttempt
                 {
                     float pitch = FingerFreq(e,i);
                     float timbre = FingerTimbre(e);
+                    float vol = 1.0f;
                     fingersPitch[i] = pitch;
                     fingersTimbre[i] = timbre;
-                    float vol = 1.0f;
+                    fingersVolume[i] = vol;
                     Point p = e.GetCurrentPoint(canvas).Position;
                     Canvas.SetLeft(fingers[i], p.X - fingerRadius);
                     Canvas.SetTop(fingers[i], p.Y - fingerRadius);
-                    //fingerText[i].Text = pitch + "";
                     Canvas.SetLeft(fingerText[i], p.X + 30);
                     Canvas.SetTop(fingerText[i], p.Y);
                     WriteOSCNote(i, vol, pitch, timbre);
@@ -233,6 +248,7 @@ namespace CSharpAttempt
                     nextTickCount64[i] = GetTickCount64();
                     fingers[i].Visibility = Visibility.Collapsed;
                     fingerText[i].Visibility = Visibility.Collapsed;
+                    fingersVolume[i] = 0.0f;
                     WriteOSCNote(i, 0.0f, fingersPitch[i], fingersTimbre[i]);
                 }
                 return i;
@@ -309,7 +325,6 @@ namespace CSharpAttempt
                 writer.WriteSingle(timbre);
                 await writer.StoreAsync();
             }
-            //await writer.StoreAsync();
         }
 
 
