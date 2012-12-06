@@ -30,6 +30,12 @@
                 <Slider Orientation="Horizontal" Width="100" Name="octave" ValueChanged="OctSliderValueChanged" Value="50"></Slider>
                 <TextBlock Text="Reverb"/>
                 <Slider Orientation="Horizontal" Width="100" Name="reverb" ValueChanged="RevSliderValueChanged" Value="50"></Slider>
+                <TextBlock Text="Chorus Freq"/>
+                <Slider Orientation="Horizontal" Width="100" Name="chorusFreq" ValueChanged="ChFSliderValueChanged" Value="50"></Slider>
+                <TextBlock Text="Chorus Depth"/>
+                <Slider Orientation="Horizontal" Width="100" Name="chorusDepth" ValueChanged="ChDSliderValueChanged" Value="50"></Slider>
+                <TextBlock Text="Chorus Mix"/>
+                <Slider Orientation="Horizontal" Width="100" Name="chorusMix" ValueChanged="ChMSliderValueChanged" Value="50"></Slider>
             </StackPanel>
         </StackPanel>
             

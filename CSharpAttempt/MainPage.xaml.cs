@@ -350,5 +350,29 @@ namespace CSharpAttempt
                 WriteOSCNote(-3, (float)reverb.Value, 0, 0);
             }
         }
+
+        private void ChFSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (chorusFreq != null)
+            {
+                WriteOSCNote(-4, (float)chorusFreq.Value, 0, 0);
+            }
+        }
+
+        private void ChDSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (chorusDepth != null)
+            {
+                WriteOSCNote(-5, (float)chorusDepth.Value, 0, 0);
+            }
+        }
+
+        private void ChMSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (chorusMix != null)
+            {
+                WriteOSCNote(-6, (float)chorusMix.Value, 0, 0);
+            }
+        }
     }
 }
