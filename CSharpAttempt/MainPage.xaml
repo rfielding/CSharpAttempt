@@ -22,9 +22,17 @@
             <TextBox Margin="4,4,4,4" Name="port" Width="120" Text="1973"></TextBox>
             <Button Margin="10,4,4,4" Name="ConnectToOSC" Click="ConnectToOSC_Click">Connect</Button>
         </StackPanel>
-        <Slider Margin="4,4,4,4" Grid.Column="0" Grid.Row="1" Orientation="Vertical" Name="volume" ValueChanged="SliderValueChanged">
+        <StackPanel Margin="4,4,4,4" Grid.Column="0" Grid.Row="1" Orientation="Vertical">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Volume"/>
+                <Slider Orientation="Horizontal"  Width="100" Name="volume" ValueChanged="VolSliderValueChanged" Value="100"></Slider>
+                <TextBlock Text="Octave"/>
+                <Slider Orientation="Horizontal" Width="100" Name="octave" ValueChanged="OctSliderValueChanged" Value="50"></Slider>
+                <TextBlock Text="Reverb"/>
+                <Slider Orientation="Horizontal" Width="100" Name="reverb" ValueChanged="RevSliderValueChanged" Value="50"></Slider>
+            </StackPanel>
+        </StackPanel>
             
-        </Slider>
         <Canvas Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas">
             <!-- PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" PointerCanceled="OnPointerCancelled" PointerExited="OnPointerExited" SizeChanged="OnSizeChanged"> -->
         </Canvas>

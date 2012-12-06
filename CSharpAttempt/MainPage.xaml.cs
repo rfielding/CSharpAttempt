@@ -180,7 +180,7 @@ namespace CSharpAttempt
                     fingerText[i].Visibility = Visibility.Visible;
                     Canvas.SetLeft(fingerText[i], p.X + 30);
                     Canvas.SetTop(fingerText[i], p.Y);
-                    fingerText[i].Text = pitch + "";
+                    //fingerText[i].Text = pitch + "";
                     WriteOSCNote(i, vol, pitch, timbre);
                 }
                 return i;
@@ -204,7 +204,7 @@ namespace CSharpAttempt
                     Point p = e.GetCurrentPoint(canvas).Position;
                     Canvas.SetLeft(fingers[i], p.X - fingerRadius);
                     Canvas.SetTop(fingers[i], p.Y - fingerRadius);
-                    fingerText[i].Text = pitch + "";
+                    //fingerText[i].Text = pitch + "";
                     Canvas.SetLeft(fingerText[i], p.X + 30);
                     Canvas.SetTop(fingerText[i], p.Y);
                     WriteOSCNote(i, vol, pitch, timbre);
@@ -275,11 +275,17 @@ namespace CSharpAttempt
             writer = new DataWriter(socket.OutputStream);
         }
 
+        //Negative voices are controls
         private async void WriteOSCNote(int voice, float vol, float freq, float timbre)
         {
             if (writer != null)
             {
-                int timediff = (int)nextTickCount64[voice];
+                int timediff = 0;
+
+                if (voice >= 0)
+                {
+                    timediff = (int)nextTickCount64[voice];
+                }
                 writer.ByteOrder = ByteOrder.BigEndian;
                 writer.WriteString("/rjf/p"); //4
                 writer.WriteByte(0);
@@ -297,27 +303,6 @@ namespace CSharpAttempt
             //await writer.StoreAsync();
         }
 
-        private async void WriteOSCCtl(int ctl, float value)
-        {
-            if (writer != null)
-            {
-                int timediff = 0;
-                writer.ByteOrder = ByteOrder.BigEndian;
-                writer.WriteString("/rjf/c"); //4
-                writer.WriteByte(0);
-                writer.WriteByte(0);
-                writer.WriteString(",iif"); //4
-                writer.WriteByte(0);
-                writer.WriteByte(0);
-                writer.WriteByte(0);
-                writer.WriteByte(0);
-                writer.WriteInt32(timediff);       //4
-                writer.WriteInt32(ctl);       //4
-                writer.WriteSingle(value);   //4
-                await writer.StoreAsync();
-            }
-            //await writer.StoreAsync();
-        }
 
         private void RecieveOSC(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
         {
@@ -342,10 +327,28 @@ namespace CSharpAttempt
             }
         }
 
-        private void SliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void VolSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            WriteOSCCtl(0, (float)volume.Value);
+            if (volume != null)
+            {
+                WriteOSCNote(-1, (float)volume.Value, 0, 0);
+            }
         }
 
+        private void OctSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (volume != null)
+            {
+                WriteOSCNote(-2, (float)octave.Value, 0, 0);
+            }
+        }
+
+        private void RevSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (reverb != null)
+            {
+                WriteOSCNote(-3, (float)reverb.Value, 0, 0);
+            }
+        }
     }
 }
