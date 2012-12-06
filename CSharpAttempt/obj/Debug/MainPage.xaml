@@ -6,16 +6,27 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid x:ConnectionId='1' Background="{StaticResource ApplicationPageBackgroundThemeBrush}"                                                                                                                                                                          >
+    <Grid x:ConnectionId='1' Background="Black"                                                                                                                                                                                             >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Button x:ConnectionId='2' Name="ConnectToOSC"                           >Connect</Button>
-        <Canvas Name="canvas">
+        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Margin="4,4,4,4" Text="Hostname:" VerticalAlignment="Center"></TextBlock>
+            <TextBox Margin="4,4,4,4" Name="host" Width="120" Text="127.0.0.1"></TextBox>
+            <TextBlock Margin="20,4,4,4" Text="Port:" VerticalAlignment="Center"></TextBlock>
+            <TextBox Margin="4,4,4,4" Name="port" Width="120" Text="1973"></TextBox>
+            <Button x:ConnectionId='3' Margin="10,4,4,4" Name="ConnectToOSC"                           >Connect</Button>
+        </StackPanel>
+        <Slider x:ConnectionId='2' Margin="4,4,4,4" Grid.Column="0" Grid.Row="1" Orientation="Vertical" Name="volume"                                  >
+            
+        </Slider>
+        <Canvas Grid.Column="1" Grid.Row="1" Margin="10,10,10,10"  Name="canvas">
+            <!-- PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" PointerCanceled="OnPointerCancelled" PointerExited="OnPointerExited" SizeChanged="OnSizeChanged"> -->
         </Canvas>
     </Grid>
 </Page>
