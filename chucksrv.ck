@@ -7,39 +7,33 @@
 
 JCRev reverb;
 Gain dist;
+Chorus chorus;
 SawOsc voices[vMax];
 SawOsc voicesHi[vMax];
-//SinOsc voicesLo[vMax];
 
 for( 0 => int vIdx; vIdx < vMax; vIdx++) {
   voices[vIdx] => dist;
   voicesHi[vIdx] => dist;
-  //voicesLo[vIdx] => dist;
 
   0 => voices[vIdx].gain;
   440 => voices[vIdx].freq;
 
   0 => voicesHi[vIdx].gain;
   880 => voicesHi[vIdx].freq;
-
-  //0 => voicesLo[vIdx].gain;
-  //220 => voicesLo[vIdx].freq;
 }
 
-//adc => Gain g1 => DelayL d => dac;
-//adc => Gain g2 => dac;
 dist => Gain g3 => dist;
 0.75 => g3.gain;
-//0.1 => g2.gain;
-//0.1 => g1.gain;
 
 0.75 => dist.gain;
-0.75 => reverb.mix;
-dist => reverb;
+0.5 => reverb.mix;
+dist => chorus;
+chorus => reverb;
 reverb => dac;
 
-
-0.025125 => float overallvol;
+0.025125 => float initialvol;
+initialvol => float overallvol;
+8 => int octdiff;
 
 OscRecv recv;
 oscPort => recv.port;
@@ -51,30 +45,47 @@ while( oe => now ) {
     oe.getInt() => int timediff;
     oe.getInt() => int voice;
     oe.getFloat() => float gain;
-
-    oe.getFloat() => float freq => voices[voice].freq;
-    2 * freq => voicesHi[voice].freq;
-    //0.5 * freq => voicesLo[voice].freq;
-
+    oe.getFloat() => float freq; 
     oe.getFloat() => float timbre;
 
-    gain * overallvol * timbre     => voices[voice].gain;
-    gain * overallvol * (1-timbre) => voicesHi[voice].gain;
+    if(voice >= 0)
+    {
+      octdiff * 0.125 * freq => voices[voice].freq;
+      octdiff * 0.25 * freq => voicesHi[voice].freq;
 
-//    if(timbre <= 0.5) {
-//      0 => voicesHi[voice].gain;
-//      gain * overallvol * timbre * 0.5 => voices[voice].gain;
-//      gain * overallvol * (1 - timbre * 0.5) => voicesLo[voice].gain;
-//    }
-//    else {
-//      gain * overallvol * (1 - (timbre - 0.5) * 0.5) => voicesHi[voice].gain;
-//      gain * overallvol * (timbre - 0.5) * 0.5 => voices[voice].gain;
-//      0 => voicesLo[voice].gain;
-//    }
+
+      gain * overallvol * timbre     => voices[voice].gain;
+      gain * overallvol * (1-timbre) => voicesHi[voice].gain;
+    }
+    else {
+      //-1 signifies a volume change
+      if(voice == -1) {
+        gain * 0.01 * initialvol => overallvol;
+      }
+      //-2 signifies an octave base change
+      if(voice == -2) {
+        for(1 => octdiff; gain >= 0; gain - 20 => gain)
+        {
+          octdiff * 2 => octdiff;
+        }
+      }
+      if(voice == -3) {
+        gain * 0.01 => reverb.mix;
+      }
+      if(voice == -4) {
+        gain * 0.005 => chorus.modFreq;
+      }
+      if(voice == -5) {
+        gain * 0.01 => chorus.modDepth;
+      }
+      if(voice == -6) {
+        gain * 0.01 => chorus.mix;
+      }
+    }
     
     //<<< "voice=", voice, ",vol=", gain, ",freq=", freq, ",timbre", timbre >>>;
   }
-  //me.yield();
+  me.yield();
 }
 
 while( true ) {
