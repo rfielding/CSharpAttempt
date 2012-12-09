@@ -363,6 +363,11 @@ namespace CSharpAttempt
                     AwakenNote(i);
                     fingerSerial[i] = -1;
                     fingersPolyGroup[i] = -1;
+                    if (fingersDownCount == 0)
+                    {
+                        //Turn off all notes...we know that there are no notes down.
+                        WriteOSCNote(-69, 0.0f, 0.0f, 0.0f);
+                    }
                 }
                 return i;
             }

@@ -81,6 +81,13 @@ while( oe => now ) {
       if(voice == -6) {
         gain * 0.01 => chorus.mix;
       }
+      if(voice == -69) {
+        //All voices off, to recover from lost messages
+        for( 0 => int v; v < vMax; v++) {
+          0 => voices[v].gain;
+          0 => voicesHi[v].gain;
+        }
+      }
     }
     
     //<<< "voice=", voice, ",vol=", gain, ",freq=", freq, ",timbre", timbre >>>;
