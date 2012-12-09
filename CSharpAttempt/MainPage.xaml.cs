@@ -41,11 +41,14 @@ namespace CSharpAttempt
         int[] fingersPolyGroup = new int[FINGERS];
         int[] fingerSerial = new int[FINGERS];
         bool[] fingerIsSilent = new bool[FINGERS];
+        float[] fingerOffBy = new float[FINGERS];
+        float[] fingerDrift = new float[FINGERS];
         int fingersDownCount = 0;
-        int fingerSerialNumber = 0;
+        int fingerSerialNumber = 1;
 
         Line[] clines = new Line[COLS];
         Line[] rlines = new Line[ROWS];
+        Ellipse[][] rmarkers = new Ellipse[ROWS][];
 
         uint[] fingerIdx = new uint[FINGERS];
         int fingerRadius = 40;
@@ -61,8 +64,8 @@ namespace CSharpAttempt
             this.InitializeComponent();
             SolidColorBrush fingerOutlineColor = new SolidColorBrush(Colors.LightBlue);
             SolidColorBrush stringColor = new SolidColorBrush(Colors.Violet);
-            SolidColorBrush fretColor = new SolidColorBrush(Colors.Navy);
-            SolidColorBrush bigFretColor = new SolidColorBrush(Colors.Violet);
+            SolidColorBrush dotColor = new SolidColorBrush(Colors.Navy);
+            SolidColorBrush fretColor = new SolidColorBrush(Colors.Gray);
             SolidColorBrush fingerColor = new SolidColorBrush(Colors.DarkBlue);
             SolidColorBrush textColor = new SolidColorBrush(Colors.White);
             for (int i = 0; i < FINGERS; i++)
@@ -82,6 +85,8 @@ namespace CSharpAttempt
                 this.canvas.Children.Add(fingerText[i]);
                 fingerText[i].Foreground = textColor;
                 fingerText[i].Visibility = Visibility.Collapsed;
+                fingersPolyGroup[i] = -1;
+                fingerSerial[i] = -1;
             }
             for (int r = 0; r < ROWS; r++)
             {
@@ -89,13 +94,51 @@ namespace CSharpAttempt
                 this.canvas.Children.Add(rlines[r]);
                 rlines[r].Stroke = stringColor;
                 rlines[r].Visibility = Visibility.Visible;
+                rmarkers[r] = new Ellipse[COLS];
             }
             for (int c = 0; c < COLS; c++)
             {
                 clines[c] = new Line();
                 this.canvas.Children.Add(clines[c]);
-                clines[c].Stroke = (c%5 == 0) ? bigFretColor : fretColor;
+                clines[c].Stroke = fretColor;
                 clines[c].Visibility = Visibility.Visible;
+            }
+            SolidColorBrush[] noteBrush = new SolidColorBrush[12];
+            noteBrush[0] = new SolidColorBrush(Colors.Red);
+            noteBrush[1] = new SolidColorBrush(Colors.Black);
+            noteBrush[2] = new SolidColorBrush(Colors.Blue);
+            noteBrush[3] = new SolidColorBrush(Colors.LightBlue);
+            noteBrush[4] = new SolidColorBrush(Colors.Black);
+            noteBrush[5] = new SolidColorBrush(Colors.Purple);
+            noteBrush[6] = new SolidColorBrush(Colors.Black);
+            noteBrush[7] = new SolidColorBrush(Colors.DarkBlue);
+            noteBrush[8] = new SolidColorBrush(Colors.Turquoise);
+            noteBrush[9] = new SolidColorBrush(Colors.Green);
+            noteBrush[10] = new SolidColorBrush(Colors.DarkMagenta);
+            noteBrush[11] = new SolidColorBrush(Colors.Black);
+
+            for (int r = 0; r < ROWS; r++)
+            {
+                for (int c = 0; c < COLS; c++)
+                {
+                    rmarkers[r][c] = new Ellipse();
+                    this.canvas.Children.Add(rmarkers[r][c]);
+                    int note = (int) ((ROWS - r - 1) * 5 + c)%12;
+                    bool inScale = 
+                        (note == 0) ||
+                        (note == 2) ||
+                        (note == 3) ||
+                        (note == 5) ||
+                        (note == 7) ||
+                        (note == 8) ||
+                        (note == 10) 
+                    ;
+
+                    rmarkers[r][c].Visibility = inScale ? Visibility.Visible : Visibility.Collapsed;
+                    rmarkers[r][c].Fill = noteBrush[note];
+                    rmarkers[r][c].Width = fingerRadius * 0.5;
+                    rmarkers[r][c].Height = fingerRadius * 0.5;
+                }
             }
         }
 
@@ -168,12 +211,15 @@ namespace CSharpAttempt
             return -1;
         }
 
-        private float FingerFreq(PointerRoutedEventArgs e, int i)
+        private float FingerFreq(float fx, float fy, int i)
         {
-            double pitchx = (double)(COLS * (e.GetCurrentPoint(canvas).Position.X) / (canvas.ActualWidth * 12));
-            double pitchy = (double)(ROWS - ROWS * (e.GetCurrentPoint(canvas).Position.Y) / canvas.ActualHeight);
+            double pitchx = (double)(COLS * fx / (canvas.ActualWidth * 12));
+            double pitchy = (double)(ROWS - ROWS * fy / canvas.ActualHeight);
             fingersPolyGroup[i] = (int)Math.Floor(pitchy);
             double pitchm = 12*pitchx + 5 * Math.Floor(pitchy) - 0.5;
+            //in *pixels*!
+            fingerOffBy[i] = (float) (((pitchm-0.5) - (int)(pitchm-0.5)) - 0.5f) * (float)((canvas.ActualWidth/(COLS)));
+
             float pitch = (float)(27.5d * Math.Pow(2.0d, pitchm/12));
             return pitch;
         }
@@ -184,6 +230,85 @@ namespace CSharpAttempt
             return 1 - ((float)pitchy - (int)pitchy);
         }
 
+        private void SilenceNotes(int i)
+        {
+            //All notes in i's poly group need to be silenced if they are not already
+            for (int f = 0; f < FINGERS; f++)
+            {
+                if (fingersVolume[f] > 0 && fingersPolyGroup[i] == fingersPolyGroup[f] && f != i)
+                {
+                    fingersVolume[f] = 0;
+                    WriteOSCNote(f, fingersVolume[f], fingersPitch[f], fingersTimbre[f]);
+                }
+            }
+        }
+
+        private void AwakenNote(int i)
+        {
+            //Find the note in our poly group that has the highest serial number below ours, and turn it on
+            int maxSerialIdx = -1;
+            for (int f = 0; f < FINGERS; f++)
+            {
+                //It's in our group, and it's not us, and it's silenced
+                if (fingersPolyGroup[i] == fingersPolyGroup[f] && f != i && fingersVolume[f] <= 0)
+                {
+                    //Initially pick the first one
+                    if(maxSerialIdx == -1)
+                    {
+                        maxSerialIdx = f;
+                    }
+                    else
+                    {
+                        //If this one is better, then pick that instead
+                        if(fingerSerial[f] > fingerSerial[maxSerialIdx] && fingerSerial[f] < fingerSerial[i])
+                        {
+                            maxSerialIdx = f;
+                        }
+                    }
+                }
+            }
+            //If there is a note to turn on, then do so
+            if (maxSerialIdx >= 0)
+            {
+                fingersVolume[maxSerialIdx] = 1.0f;  //TODO: when we have more gestural control, we will need to remember the volume it was silenced at
+                WriteOSCNote(maxSerialIdx, fingersVolume[maxSerialIdx], fingersPitch[maxSerialIdx], fingersTimbre[maxSerialIdx]);
+            }
+        }
+
+        /**
+         * Set volume before coming in here
+         */
+        private void FingerDownOrMoveHandler(PointerRoutedEventArgs e, int i)
+        {
+            float fx = (float)(e.GetCurrentPoint(canvas).Position.X) + fingerDrift[i];
+            float fy = (float)(e.GetCurrentPoint(canvas).Position.Y);
+            float pitch = FingerFreq(fx, fy, i);
+            float timbre = FingerTimbre(e);
+            fingersPitch[i] = pitch;
+            fingersTimbre[i] = timbre;
+            fingers[i].Visibility = Visibility.Visible;
+            fingerDrift[i] = -fingerOffBy[i] * 0.5f;
+
+            if (IdxOfMaxSerialNumberInPolyGroup(fingersPolyGroup[i]) == i)
+            {
+                fingers[i].Width = fingerRadius * 2;
+                fingers[i].Height = fingerRadius * 2;
+            }
+            else
+            {
+                fingers[i].Width = fingerRadius * 1.5;
+                fingers[i].Height = fingerRadius * 1.5;
+            }
+            Canvas.SetLeft(fingers[i], fx - fingers[i].Width / 2);
+            Canvas.SetTop(fingers[i], fy - fingers[i].Height / 2);
+
+            //Canvas.SetLeft(fingerText[i], fx + 30);
+            //Canvas.SetTop(fingerText[i], fy);
+            //fingerText[i].Visibility = Visibility.Visible;
+            //fingerText[i].Text = "" + fingersPolyGroup[i];
+
+        }
+
         private int FingerDownHandler(PointerRoutedEventArgs e)
         {
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
@@ -191,21 +316,15 @@ namespace CSharpAttempt
                 int i = IdxFingerPressed(e.Pointer.PointerId);
                 if (i >= 0)
                 {
+
                     nextTickCount64[i] = GetTickCount64();
-                    float vol = 1.0f;
-                    float pitch = FingerFreq(e,i);
-                    float timbre = FingerTimbre(e);
-                    fingersPitch[i] = pitch;
-                    fingersTimbre[i] = timbre;
-                    fingersVolume[i] = vol;
-                    Point p = e.GetCurrentPoint(canvas).Position;
-                    Canvas.SetLeft(fingers[i], p.X - fingerRadius);
-                    Canvas.SetTop(fingers[i], p.Y - fingerRadius);
-                    fingers[i].Visibility = Visibility.Visible;
-                    fingerText[i].Visibility = Visibility.Visible;
-                    Canvas.SetLeft(fingerText[i], p.X + 30);
-                    Canvas.SetTop(fingerText[i], p.Y);
-                    WriteOSCNote(i, vol, pitch, timbre);
+                    fingersVolume[i] = 1.0f;
+                    FingerDownOrMoveHandler(e,i);
+
+                    SilenceNotes(i);
+
+                    WriteOSCNote(i, fingersVolume[i], fingersPitch[i], fingersTimbre[i]);
+
                 }
                 return i;
             }
@@ -220,18 +339,9 @@ namespace CSharpAttempt
                 int i = IdxFingerMoved(e.Pointer.PointerId);
                 if (i >= 0)
                 {
-                    float pitch = FingerFreq(e,i);
-                    float timbre = FingerTimbre(e);
-                    float vol = 1.0f;
-                    fingersPitch[i] = pitch;
-                    fingersTimbre[i] = timbre;
-                    fingersVolume[i] = vol;
-                    Point p = e.GetCurrentPoint(canvas).Position;
-                    Canvas.SetLeft(fingers[i], p.X - fingerRadius);
-                    Canvas.SetTop(fingers[i], p.Y - fingerRadius);
-                    Canvas.SetLeft(fingerText[i], p.X + 30);
-                    Canvas.SetTop(fingerText[i], p.Y);
-                    WriteOSCNote(i, vol, pitch, timbre);
+                    FingerDownOrMoveHandler(e, i);
+                    WriteOSCNote(i, fingersVolume[i], fingersPitch[i], fingersTimbre[i]);
+
                 }
                 return i;
             }
@@ -250,6 +360,9 @@ namespace CSharpAttempt
                     fingerText[i].Visibility = Visibility.Collapsed;
                     fingersVolume[i] = 0.0f;
                     WriteOSCNote(i, 0.0f, fingersPitch[i], fingersTimbre[i]);
+                    AwakenNote(i);
+                    fingerSerial[i] = -1;
+                    fingersPolyGroup[i] = -1;
                 }
                 return i;
             }
@@ -348,6 +461,14 @@ namespace CSharpAttempt
                 clines[c].Y1 = 0;
                 clines[c].Y2 = h;
                 clines[c].X1 = clines[c].X2 = ((c * 1.0 + 0.5) / COLS) * w;
+            }
+            for (int r = 0; r < ROWS; r++)
+            {
+                for (int c = 0; c < COLS; c++)
+                {
+                    Canvas.SetLeft(rmarkers[r][c], ((c * 1.0 + 0.5) / COLS) * w - rmarkers[r][c].Width/2);
+                    Canvas.SetTop(rmarkers[r][c],  ((r * 1.0 + 0.5) / ROWS) * h - rmarkers[r][c].Height/2);
+                }
             }
         }
 

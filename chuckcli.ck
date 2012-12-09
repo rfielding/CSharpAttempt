@@ -2,7 +2,7 @@
 //run like:  chuck chuckcli.ck
 
 "/rjf/p,iifff" => string oscAddress;
-1973 => int oscPort;
+57120 => int oscPort;
 10 => int vMax;
 "127.0.0.1" => string oscHost;
 

@@ -2,7 +2,7 @@
 //run like: chuck chucksrv.ck
 
 "/rjf/p,iifff" => string oscAddress;
-1973 => int oscPort;
+57120 => int oscPort;
 10 => int vMax;
 
 JCRev reverb;
@@ -23,9 +23,9 @@ for( 0 => int vIdx; vIdx < vMax; vIdx++) {
 }
 
 dist => Gain g3 => dist;
-0.75 => g3.gain;
+0.7 => g3.gain;
 
-0.75 => dist.gain;
+0.85 => dist.gain;
 0.5 => reverb.mix;
 dist => chorus;
 chorus => reverb;
@@ -73,10 +73,10 @@ while( oe => now ) {
         gain * 0.01 => reverb.mix;
       }
       if(voice == -4) {
-        gain * 0.005 => chorus.modFreq;
+        gain * 0.01 => chorus.modFreq;
       }
       if(voice == -5) {
-        gain * 0.01 => chorus.modDepth;
+        gain * 0.005 => chorus.modDepth;
       }
       if(voice == -6) {
         gain * 0.01 => chorus.mix;

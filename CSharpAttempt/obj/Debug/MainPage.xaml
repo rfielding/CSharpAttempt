@@ -19,7 +19,7 @@
             <TextBlock Margin="4,4,4,4" Text="Hostname:" VerticalAlignment="Center"></TextBlock>
             <TextBox Margin="4,4,4,4" Name="host" Width="120" Text="127.0.0.1"></TextBox>
             <TextBlock Margin="20,4,4,4" Text="Port:" VerticalAlignment="Center"></TextBlock>
-            <TextBox Margin="4,4,4,4" Name="port" Width="120" Text="1973"></TextBox>
+            <TextBox Margin="4,4,4,4" Name="port" Width="120" Text="57120"></TextBox>
             <Button x:ConnectionId='9' Margin="10,4,4,4" Name="ConnectToOSC"                           >Connect</Button>
         </StackPanel>
         <StackPanel Margin="4,4,4,4" Grid.Column="0" Grid.Row="1" Orientation="Vertical">
