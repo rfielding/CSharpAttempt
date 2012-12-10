@@ -26,6 +26,8 @@ namespace CSharpAttempt
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        DispatcherTimer moveTimer = new DispatcherTimer();
+
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         private static extern long GetTickCount64();
 
@@ -54,20 +56,22 @@ namespace CSharpAttempt
         int fingerRadius = 40;
         DatagramSocket socket;
         DataWriter writer;
-        byte[] oscBytes;
 
         long[] lastTickCount64 = new long[FINGERS];
         long[] nextTickCount64 = new long[FINGERS];
 
+        SolidColorBrush fingerOutlineColor = new SolidColorBrush(Colors.LightBlue);
+        SolidColorBrush stringColor = new SolidColorBrush(Colors.Violet);
+        SolidColorBrush dotColor = new SolidColorBrush(Colors.Navy);
+        SolidColorBrush fretColor = new SolidColorBrush(Colors.Gray);
+        SolidColorBrush fingerColor = new SolidColorBrush(Colors.DarkBlue);
+        SolidColorBrush fingerSilenceColor = new SolidColorBrush(Colors.Red);
+        SolidColorBrush textColor = new SolidColorBrush(Colors.White);
+
+
         public MainPage()
         {
             this.InitializeComponent();
-            SolidColorBrush fingerOutlineColor = new SolidColorBrush(Colors.LightBlue);
-            SolidColorBrush stringColor = new SolidColorBrush(Colors.Violet);
-            SolidColorBrush dotColor = new SolidColorBrush(Colors.Navy);
-            SolidColorBrush fretColor = new SolidColorBrush(Colors.Gray);
-            SolidColorBrush fingerColor = new SolidColorBrush(Colors.DarkBlue);
-            SolidColorBrush textColor = new SolidColorBrush(Colors.White);
             for (int i = 0; i < FINGERS; i++)
             {
                 fingers[i] = new Ellipse();
@@ -140,6 +144,17 @@ namespace CSharpAttempt
                     rmarkers[r][c].Height = fingerRadius * 0.5;
                 }
             }
+
+            moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30);
+            moveTimer.Tick += moveTimer_Tick;
+        }
+
+        void moveTimer_Tick(object sender, object e)
+        {
+            //FingerDownOrMoveHandler.for (int f = 0; f < FINGERS; f++)
+            //{
+            //    FingerDownOrMoveHandler();
+            //}
         }
 
         /// <summary>
@@ -278,12 +293,9 @@ namespace CSharpAttempt
         /**
          * Set volume before coming in here
          */
-        private void FingerDownOrMoveHandler(PointerRoutedEventArgs e, int i)
+        private void FingerDownOrMoveHandler(float fx, float fy, float timbre, int i)
         {
-            float fx = (float)(e.GetCurrentPoint(canvas).Position.X) + fingerDrift[i];
-            float fy = (float)(e.GetCurrentPoint(canvas).Position.Y);
             float pitch = FingerFreq(fx, fy, i);
-            float timbre = FingerTimbre(e);
             fingersPitch[i] = pitch;
             fingersTimbre[i] = timbre;
             fingers[i].Visibility = Visibility.Visible;
@@ -293,11 +305,13 @@ namespace CSharpAttempt
             {
                 fingers[i].Width = fingerRadius * 2;
                 fingers[i].Height = fingerRadius * 2;
+                fingers[i].Fill = fingerColor;
             }
             else
             {
                 fingers[i].Width = fingerRadius * 1.5;
                 fingers[i].Height = fingerRadius * 1.5;
+                fingers[i].Fill = fingerSilenceColor;
             }
             Canvas.SetLeft(fingers[i], fx - fingers[i].Width / 2);
             Canvas.SetTop(fingers[i], fy - fingers[i].Height / 2);
@@ -307,6 +321,14 @@ namespace CSharpAttempt
             //fingerText[i].Visibility = Visibility.Visible;
             //fingerText[i].Text = "" + fingersPolyGroup[i];
 
+        }
+
+        private void FingerDownOrMoveHandler(PointerRoutedEventArgs e, int i)
+        {
+            float fx = (float)(e.GetCurrentPoint(canvas).Position.X) + fingerDrift[i];
+            float fy = (float)(e.GetCurrentPoint(canvas).Position.Y);
+            float timbre = FingerTimbre(e);
+            FingerDownOrMoveHandler(fx, fy, timbre, i);
         }
 
         private int FingerDownHandler(PointerRoutedEventArgs e)
