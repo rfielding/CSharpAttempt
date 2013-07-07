@@ -20,6 +20,8 @@ as they use the same UDP port to listen for incoming data.
 * The pair of scripts chucksrv.ck should be run first.  
 The the script chuckcli.ck can also be run in a different window to smoke-test ChucK itself.
 The client is a Just Intonation noise-maker script that will slowly start playing sound when it is run.
+If you are interested in algorithmic music with ChucK, then play around with these two files for a while
+before trying to build this code.
 
 * Run chucksrv.ck clean before starting up this program.
 When it starts, press the "Connect" button.
@@ -29,3 +31,14 @@ A video on doing this is here:
 
 http://www.youtube.com/watch?v=6hgCIeF7inM
 
+The Instrument
+==============
+
+The main points about this instrument:
+
+* Ergonomics allow you to play with guitarist skills.  It is laid out as rows of fourths.
+* You should be able to play with about the same speed and skill of a real guitar, other than latency effects of your hardware and synth combination
+* Hammer-on/Hammer-off per row, similar to a normal string instrument.  This is the most crucial element to fast and realistic play for the instrument.
+* You can replace the server script with anything that accepts OSC messages.  If you need to modify the OSC messages to match a different system (ie: CSound), then you can edit the source as well.
+* Not including a sound engine allows this source code to be in C#.  If you attempt to embed an audio engine, you may find that you need to write it in C++ to get deterministic timing.  Making this only send UDP packets reduces the real-time burden for the interface.
+* I have tested this only with a Lenovo Ideacentre A7.  I haven't ported this to WinRT or Surface, because having to talk to a separate OSC process is a "non-starter" for the app store.
